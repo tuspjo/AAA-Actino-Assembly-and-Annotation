@@ -45,14 +45,15 @@ flye --version | cmp - /home/WIN.DTU.DK/tuspjo/install/ass_ann_script_dependenci
 porechop --version|cmp - /home/WIN.DTU.DK/tuspjo/install/ass_ann_script_dependencies/v.1.4.1/porechop
 prokka --version 2>&1|cmp - /home/WIN.DTU.DK/tuspjo/install/ass_ann_script_dependencies/v.1.4.1/prokka
 trim_galore --version | cmp - /home/WIN.DTU.DK/tuspjo/install/ass_ann_script_dependencies/v.1.4.1/trimgalore
-unicycler --version | cmp - /home/WIN.DTU.DK/tuspjo/install/ass_ann_script_dependencies/v.1.4.1/unicycler
+#unicycler --version | cmp - /home/WIN.DTU.DK/tuspjo/install/ass_ann_script_dependencies/v.1.4.1/unicycler
 antismash --version |cmp - /home/WIN.DTU.DK/tuspjo/install/ass_ann_script_dependencies/v.1.4.1/antiSMASH
+polypolish --version |cmp - /home/WIN.DTU.DK/tuspjo/install/ass_ann_script_dependencies/v.1.4.1/polypolish
 
-#clean nanopore data
+##clean nanopore data
 porechop -i nanopore/ -o nanopore/porechop.fq
 filtlong --min_length 1000 nanopore/porechop.fq > nanopore/min1kb.fq
 
-#assembly nanopore data
+##assembly nanopore data
 flye -t $THREADS -i 5 -o flye --plasmids --nano-hq nanopore/min1kb.fq
 cat flye/flye.log|grep 'Reads N50.*' -o|cut -f 3 -d ' '|printf 'nanopore N50: %s\n' "$(cat)" > n50
 rm nanopore/porechop.fq nanopore/min1kb.fq
@@ -83,24 +84,43 @@ fi
 
 
 #polish assembly
-unicycler_polish --threads $THREADS -a flye/assembly.fasta -1 illumina/*_val_1.fq.gz -2 illumina/*_val_2.fq.gz
+#unicycler_polish --threads $THREADS -a flye/assembly.fasta -1 illumina/*_val_1.fq.gz -2 illumina/*_val_2.fq.gz
+bwa index flye/assembly.fasta
+bwa mem -t 16 -a flye/assembly.fasta illumina/*val_1.fq.gz > alignments_1.sam
+bwa mem -t 16 -a flye/assembly.fasta illumina/*val_2.fq.gz > alignments_2.sam
+polypolish_insert_filter.py --in1 alignments_1.sam --in2 alignments_2.sam --out1 filtered_1.sam --out2 filtered_2.sam
+polypolish flye/assembly.fasta filtered_1.sam filtered_2.sam > polished.fasta 2> polypolish.log
+rm alignments_1.sam alignments_2.sam filtered_1.sam filtered_2.sam 
 rm illumina/*val_1.fq.gz illumina/*val_2.fq.gz
 
 #phylogenetic placement
-mkdir automlst
-cp *final_polish.fasta automlst/.
-autoMLST --cpu $THREADS automlst/ automlst/
-cat automlst/mash_distances.txt | grep -v \# | sort -k5 | tail -n 1 | cut -f 3,5,7,8 | sed 's/_/\n/1' | sed 's/\t/\n/g' | split -l 1 -a 1 -d - automlst/result
-cat automlst/result0 > automlst/genus
+#mkdir automlst
+#cp polished.fasta automlst/.
+#autoMLST --cpu $THREADS automlst/ automlst/
+#cat automlst/mash_distances.txt | grep -v \# | sort -k5 | tail -n 1 | cut -f 3,5,7,8 | sed 's/_/\n/1' | sed 's/\t/\n/g' | split -l 1 -a 1 -d - automlst/result
+#cat automlst/result0 > automlst/genus
 #paste automlst/result1 automlst/result2 | sed 's/\t/_/' > automlst/species
+#paste automlst/result0 automlst/result1 automlst/result2 | sed 's/\t/_/g' > automlst/genus_species_ANI
+
+mkdir automlst
+cp polished.fasta automlst/.
+autoMLST --cpu $THREADS automlst/ automlst/
+cat automlst/mash_distances.txt | grep -v \# | sort -k5 | tail -n 1 | cut -f 2,3,5,7,8 | sed 's/_/\n/2' | sed 's/\t/\n/g' | split -l 1 -a 1 -d - automlst/result
+cat automlst/result1 > automlst/genus
+paste automlst/result1 automlst/result2 | sed 's/\t/_/' > automlst/species
 paste automlst/result0 automlst/result1 automlst/result2 | sed 's/\t/_/g' > automlst/genus_species_ANI
+paste automlst/result1 automlst/result2 automlst/result0 automlst/result3| sed 's/\t/_/g' > automlst/genus_species_ref_ANI
+
+
+
+
 
 #prepare for annotation
-cat *final_polish.fasta | sed "s/contig/$STRAINNAME/" | sed "s/scaffold/${STRAINNAME}_scaf/" > prokkainput.fna
+cat polished.fasta | sed "s/contig/$STRAINNAME/" | sed "s/scaffold/${STRAINNAME}_scaf/" |sed 's/_polypolish//' > prokkainput.fna
 
 #annotate: note that the 6 actinobacrterial strains as well as PFA should be included
 prokka --outdir ${STRAINNAME}_prokka_actinoannotPFAM --prefix $STRAINNAME --genus `cat automlst/genus` --species sp.$STRAINNAME --cdsrnaolap --cpus $THREADS --rnammer --increment 10 --evalue 1e-05 prokkainput.fna
-antismash --output-dir ${STRAINNAME}_antiSMASH --cb-general --cb-subclusters --cb-knownclusters -c $THREADS ${STRAINNAME}_prokka_actinoannotPFAM/$STRAINNAME.gbk  --clusterhmmer --cc-mibig --asf --tigr --pfam2go --html-description `cat automlst/genus_species_ANI`
+antismash --output-dir ${STRAINNAME}_antiSMASH --cb-general --cb-subclusters --cb-knownclusters -c $THREADS ${STRAINNAME}_prokka_actinoannotPFAM/$STRAINNAME.gbk  --clusterhmmer --cc-mibig --asf --tigr --pfam2go --html-description `cat automlst/genus_species_ref_ANI`
 
 
 #make short results log of the assembly
@@ -111,10 +131,11 @@ cp flye/assembly_graph.gfa $STRAINNAME.graph.gfa
 cp flye/flye.log $STRAINNAME.flye.log
 cp ${STRAINNAME}_antiSMASH/$STRAINNAME.zip ${STRAINNAME}.antiSMASH.zip
 echo $STRAINNAME|sed 's/^/Strain name: /' >> $STRAINNAME.AA.log
-cat automlst/result0|printf 'genus: %s\n' "$(cat)" >> $STRAINNAME.AA.log
-cat automlst/result1|printf 'species: %s\n' "$(cat)" >> $STRAINNAME.AA.log
-cat automlst/result2|printf 'estimated ANI: %s\n' "$(cat)" >> $STRAINNAME.AA.log
-cat automlst/genus_species_ANI|printf 'genus_species_ANI: %s\n' "$(cat)" >> $STRAINNAME.AA.log
+cat automlst/result1|printf 'genus: %s\n' "$(cat)" >> $STRAINNAME.AA.log
+cat automlst/result2|printf 'species: %s\n' "$(cat)" >> $STRAINNAME.AA.log
+cat automlst/result0|printf 'reference acc: %s\n' "$(cat)" >> $STRAINNAME.AA.log
+cat automlst/result3|printf 'estimated ANI: %s\n' "$(cat)" >> $STRAINNAME.AA.log
+cat automlst/genus_species_ref_ANI|printf 'genus_species_ANI: %s\n' "$(cat)" >> $STRAINNAME.AA.log
 assembly-stats -s $STRAINNAME.contigs.fasta|grep number|cut -f 3 |printf 'number of contigs: %s\n' "$(cat)" >> $STRAINNAME.AA.log
 assembly-stats -s $STRAINNAME.contigs.fasta|grep total_length|cut -f 3|printf 'total assembly length: %s\n' "$(cat)" >> $STRAINNAME.AA.log
 assembly-stats -s $STRAINNAME.contigs.fasta|grep longest|cut -f 3|printf 'longest contig: %s\n' "$(cat)" >> $STRAINNAME.AA.log
@@ -123,7 +144,8 @@ cat flye/assembly_info.txt >> $STRAINNAME.AA.log
 #echo ill_pairs >> $STRAINNAME.AA.log
 cat n50 >> $STRAINNAME.AA.log
 cat ill_pairs >> $STRAINNAME.AA.log
-cat *changes|wc -l|printf 'illumina polished bases: %s\n' "$(cat)" >> $STRAINNAME.AA.log
+#cat *changes|wc -l|printf 'illumina polished bases: %s\n' "$(cat)" >> $STRAINNAME.AA.log
+cat polypolish.log |grep -P 'Polishing contig' -A 4 --no-group-separator >> $STRAINNAME.AA.log
 cat overall_ill_on_flye_mapping_percent|printf 'percent illumina reads mapping on flye assembly: %s\n' "$(cat)" >> $STRAINNAME.AA.log
 ls *antiSMASH/*region*gbk|wc -l |sed 's/^/BGC Regions: /' >> $STRAINNAME.AA.log
 cat ${STRAINNAME}_prokka_actinoannotPFAM/${STRAINNAME}.log |grep unann|tail -n 1|sed 's/.* There are //1' >> $STRAINNAME.AA.log
@@ -138,15 +160,16 @@ blastn -version|grep -v Pack|sed 's/: / v/' >> $STRAINNAME.AA.log
 busco --version|sed 's/ / v/' >> $STRAINNAME.AA.log
 filtlong --version >> $STRAINNAME.AA.log
 flye --version 2>&1|printf 'flye v%s\n' "$(cat)" >> $STRAINNAME.AA.log
+polypolish --version 2>&1|printf '%s\n' "$(cat)" >> $STRAINNAME.AA.log
 porechop --version|printf 'porechop v%s\n' "$(cat)" >> $STRAINNAME.AA.log
 prokka --version 2>&1|grep prokka_|sed 's/ / v/' >> $STRAINNAME.AA.log
 trim_galore --version |grep version|sed 's/.*version /v/'|printf 'trimgalore %s\n' "$(cat)" >> $STRAINNAME.AA.log
-unicycler --version 2>&1 >> $STRAINNAME.AA.log
+#unicycler --version 2>&1 >> $STRAINNAME.AA.log
 antismash --version >> $STRAINNAME.AA.log 
 
 #clean up temporary files
 rm -r  automlst busco* flye ${STRAINNAME}_antiSMASH
-rm   prokkainput.fna 0* overall_ill_on_flye_mapping_percent overall_ill_on_flye_mapping_short n50 ill_pairs
+rm   prokkainput.fna  overall_ill_on_flye_mapping_percent overall_ill_on_flye_mapping_short n50 ill_pairs
 
 #make little celebratory statement marking the finishing of the pipeline
 echo 'Your assembly and annotation of'
