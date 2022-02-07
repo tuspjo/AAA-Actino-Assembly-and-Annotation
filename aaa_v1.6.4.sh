@@ -201,7 +201,7 @@ antismash --version >> $STRAINNAME.AA.log
 rm -r  automlst busco* flye ${STRAINNAME}_antiSMASH
 rm overall_ill_on_flye_mapping_percent overall_ill_on_flye_mapping_short n50 ill_pairs
 rm illumina/*val_1.fq.gz illumina/*val_2.fq.gz
-rm bwa.err polypolished.fasta.alignSorted.bam polypolished.fasta.alignSorted.bam.bai polypolished.fasta.batches polypolished.fasta.bwa.amb polypolished.fasta.bwa.ann polypolished.fasta.bwa.bwt polypolished.fasta.bwa.pac polypolished.fasta.bwa.sa polypolished.fasta.fai polypolished.fasta.fix.success polypolished.fasta.index.success polypolished.fasta.map.success polypolished.fasta.names polypolished.fasta.PolcaCorrected.fa polypolished.fasta.report polypolished.fasta.report.success polypolished.fasta.sort.success polypolished.fasta.unSorted.sam polypolished.fasta.vcf polypolished.fasta.vc.success polypolish.log samtools.err
+rm polypolished.fasta bwa.err polypolished.fasta.alignSorted.bam polypolished.fasta.alignSorted.bam.bai polypolished.fasta.batches polypolished.fasta.bwa.amb polypolished.fasta.bwa.ann polypolished.fasta.bwa.bwt polypolished.fasta.bwa.pac polypolished.fasta.bwa.sa polypolished.fasta.fai polypolished.fasta.fix.success polypolished.fasta.index.success polypolished.fasta.map.success polypolished.fasta.names polypolished.fasta.PolcaCorrected.fa polypolished.fasta.report polypolished.fasta.report.success polypolished.fasta.sort.success polypolished.fasta.unSorted.sam polypolished.fasta.vcf polypolished.fasta.vc.success polypolish.log samtools.err
 
 #make little celebratory statement marking the finishing of the pipeline
 echo 'Your assembly and annotation of'
