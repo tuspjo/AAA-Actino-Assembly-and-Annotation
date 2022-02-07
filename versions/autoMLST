@@ -1,0 +1,6 @@
+usage: automlst.py [-h] [-skip SKIP] [-ref REFDB] [-rd REFDIRECTORY]
+                   [-bs BOOTSTRAP] [-cat] [-kf] [-fm] [-fa] [-m MODEL]
+                   [-ch CHECKPOINT] [-c CPU] [-wf {1,2}] [-mm MAXMLST]
+                   [-mn MINMLST] [-mo MAXORG]
+                   indir resultdir
+automlst.py: error: too few arguments
