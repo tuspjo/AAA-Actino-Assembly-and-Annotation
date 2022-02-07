@@ -50,7 +50,7 @@ antismash --version |cmp - /home/WIN.DTU.DK/tuspjo/install/ass_ann_script_depend
 polypolish --version |cmp - /home/WIN.DTU.DK/tuspjo/install/ass_ann_script_dependencies/v.1.4.1/polypolish
 module load masurca
 masurca --version|cmp - /home/WIN.DTU.DK/tuspjo/install/ass_ann_script_dependencies/v.1.4.1/masurca
-module unload
+module unload masurca
 
 ##clean nanopore data #no longer necessary after upgrades to guppy. also porechop hardly knows the RBK110-96 barcodes as development stopped years before the kit was released.
 #porechop -i nanopore/ -o nanopore/porechop.fq
