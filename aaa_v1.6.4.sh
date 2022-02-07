@@ -155,7 +155,7 @@ busco -i ${STRAINNAME}_prokka_actinoannotPFAM/$STRAINNAME.faa -l actinobacteria_
 Bandage image flye/assembly_graph.gfa $STRAINNAME.jpg
 cp flye/assembly_graph.gfa $STRAINNAME.graph.gfa
 cp flye/flye.log $STRAINNAME.flye.log
-#cp ${STRAINNAME}_antiSMASH/$STRAINNAME.zip ${STRAINNAME}.antiSMASH.zip
+cp ${STRAINNAME}_antiSMASH/$STRAINNAME.zip ${STRAINNAME}.antiSMASH.zip
 echo $STRAINNAME|sed 's/^/Strain name: /' >> $STRAINNAME.AA.log
 cat automlst/result1|printf 'genus: %s\n' "$(cat)" >> $STRAINNAME.AA.log
 cat automlst/result2|printf 'species: %s\n' "$(cat)" >> $STRAINNAME.AA.log
