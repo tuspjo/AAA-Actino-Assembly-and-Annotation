@@ -1,7 +1,7 @@
 # AAA-Actino-Assembly-and-Annotation
 the ass_ann script goes to github!
 
-This script uses some of the most well known tools to assemble and annotate the genomes of actinobacteria from nanopore fastqs and illumina data. Normally, an filtering step before this pipeline would weed out datasets which does not assemble fully/sufficiently.  
+This script uses some of the most well known tools to assemble and annotate the genomes of actinobacteria from nanopore fastqs and illumina data. Normally, a filtering step before this pipeline would weed out datasets which does not assemble fully/sufficiently.  
 
 Usage:
 ./aaa_v1.6.4.sh -c threads -s strain_name
