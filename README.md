@@ -1,7 +1,10 @@
 # AAA-Actino-Assembly-and-Annotation
 the ass_ann script goes to github!
 
-This script uses some of the most well known tools to assemble and annotate the genomes of actinobacteria from nanopore fastqs and illumina data. Normally, an filtering step before this pipeline would weed out datasets which does not assemble fully/sufficiently.  
+This script uses some of the most well known tools to assemble and annotate the genomes of actinobacteria from nanopore fastqs and illumina data. Normally, a filtering step before this pipeline would weed out datasets which does not assemble fully/sufficiently.  
+
+Usage:
+./aaa_v1.6.4.sh -c threads -s strain_name
 
 So the current script requires a very particular folder structure, which needs to look like this 
 
@@ -26,13 +29,14 @@ The following tools are being used (again, locations on NBCshared):
 	bandage		0.8.1		/home/WIN.DTU.DK/tuspjo/install/Bandage
 	blastn		2.10.0+		/opt/blast/2.10/bin/blastn (loaded with a module)
 	busco		BUSCO 5.1.2	module
-	filtlong	v0.2.0		/home/WIN.DTU.DK/tuspjo/install/Filtlong/bin/filtlong
+	DEPRECATED filtlong	v0.2.0		/home/WIN.DTU.DK/tuspjo/install/Filtlong/bin/filtlong
 	flye2.9		2.9-b1768	module
-	porechop	0.2.4		module
+	DEPRECATED porechop	0.2.4		module
 	prokka		1.14.6		module
 	trimgalore	0.6.4_dev	module
-	unicycler	v0.4.8-beta	module
-
+	DEPRECATED unicycler	v0.4.8-beta	module
+	masurca/polca	v4.0.5		module only to be loaded when used bc loads a bunch of stuff which might interfere
+	polypolish	v0.5.0		module
 Certain versions of some of the tools needs to be loaded : 
-	module load antismash/dev porechop flye unicycler autoMLST prokka/1.14.6 busco trimgalore
+	module load antismash/dev flye autoMLST prokka/1.14.6 busco trimgalore polypolish #porechop filtlong unicycler
 (ok, apparently only prokka, previously also BUSCO)
