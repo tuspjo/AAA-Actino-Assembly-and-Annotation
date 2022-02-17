@@ -13,9 +13,9 @@ So the current script requires a very particular folder structure, which needs t
         		somethingsomething.1.fq.gz
         		somethingsomething.2.fq.gz
     	-> nanopore
-        		fastqfile1
-        		fastqfile2
-        		fastqfile3
+        		file1fastq.gz
+        		file2fastq.gz
+        		file3fastq.gz
          		...
 
 Further, it requires a set of files containing the version numbers for each tool in use, which on the machine NBC-shared can be found in this location    
