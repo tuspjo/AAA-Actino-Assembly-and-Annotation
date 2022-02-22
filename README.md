@@ -41,6 +41,9 @@ Certain versions of some of the tools needs to be loaded :
 (ok, apparently only prokka, previously also BUSCO)
 
 Prokka setup
+
 Prokka annotates a lot more genes if given extra databases to the default ones.
-Download PFAM HMM and PGAP HMM and put them in your prokka location in db/hmm/ and press them
-Currently, Pfam-A v.32.0 and PGAP HMMs released 2021-11-10 are used (http://ftp.ebi.ac.uk/pub/databases/Pfam/releases/ https://ftp.ncbi.nlm.nih.gov/hmm/current/RELEASE_NOTES.txt 
+
+Download PFAM HMM and PGAP HMM and put them in your prokka location in db/hmm/ and press them.
+
+Currently, Pfam-A v.32.0 and PGAP HMMs released 2021-11-10 are used (http://ftp.ebi.ac.uk/pub/databases/Pfam/releases/ https://ftp.ncbi.nlm.nih.gov/hmm/current/ 
