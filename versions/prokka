@@ -1,2 +1,1 @@
-using --proteins /opt/prokka/1.14.6/db/Actinos_6species.gbff
-prokka_raw 1.14.6
+prokka 1.14.6

@@ -18,8 +18,7 @@ So the current script requires a very particular folder structure, which needs t
         		file3fastq.gz
          		...
 
-Further, it requires a set of files containing the version numbers for each tool in use, which on the machine NBC-shared can be found in this location    
-  /home/WIN.DTU.DK/tuspjo/install/ass_ann_script_dependencies/v.1.4.1
+Further, it requires a set of files containing the version numbers for each tool in use, which is included in the folder "versions"
 
 The following tools are being used (again, locations on NBCshared): 
 	
