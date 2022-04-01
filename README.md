@@ -12,6 +12,8 @@ So the current script requires a very particular folder structure, which needs t
     	-> illumina
         		somethingsomething.1.fq.gz
         		somethingsomething.2.fq.gz
+			someotherthing.1.fq.gz
+			someotherthing.2.fq.gz
     	-> nanopore
         		file1fastq.gz
         		file2fastq.gz
@@ -20,7 +22,7 @@ So the current script requires a very particular folder structure, which needs t
 
 Further, it requires a set of files containing the version numbers for each tool in use, which is included in the folder "versions"
 
-The following tools are being used (again, locations on NBCshared): 
+The following tools are being used (locations on NBCshared): 
 	
 	Tool		Version		Location
 	antiSMASH	6.1.0-4de2be2	module
@@ -28,12 +30,9 @@ The following tools are being used (again, locations on NBCshared):
 	bandage		0.8.1		/home/WIN.DTU.DK/tuspjo/install/Bandage
 	blastn		2.10.0+		/opt/blast/2.10/bin/blastn (loaded with a module)
 	busco		BUSCO 5.1.2	module
-	DEPRECATED filtlong	v0.2.0		/home/WIN.DTU.DK/tuspjo/install/Filtlong/bin/filtlong
 	flye2.9		2.9-b1768	module
-	DEPRECATED porechop	0.2.4		module
 	prokka		1.14.6		module
 	trimgalore	0.6.4_dev	module
-	DEPRECATED unicycler	v0.4.8-beta	module
 	masurca/polca	v4.0.5		module only to be loaded when used bc loads a bunch of stuff which might interfere
 	polypolish	v0.5.0		module
 Certain versions of some of the tools needs to be loaded : 
