@@ -4,7 +4,7 @@ the ass_ann script goes to github!
 This script uses some of the most well known tools to assemble and annotate the genomes of actinobacteria from nanopore fastqs and illumina data. Normally, a filtering step before this pipeline would weed out datasets which does not assemble fully/sufficiently.  
 
 Usage:
-./aaa_v1.6.4.sh -c threads -s strain_name
+./aaa_v1.6.7.sh -c threads -s strain_name
 
 So the current script requires a very particular folder structure, which needs to look like this 
 
@@ -25,7 +25,7 @@ Further, it requires a set of files containing the version numbers for each tool
 The following tools are being used (locations on NBCshared): 
 	
 	Tool		Version		Location
-	antiSMASH	6.1.0-4de2be2	module
+	antiSMASH	6.2.0		module
 	autoMLST	NA		module
 	bandage		0.8.1		/home/WIN.DTU.DK/tuspjo/install/Bandage
 	blastn		2.10.0+		/opt/blast/2.10/bin/blastn (loaded with a module)
