@@ -112,9 +112,16 @@ module unload masurca
 #export PATH=$OLD_PATH
 #export LD_LIBRARY_PATH=$OLD_LD_PATH
 
+#re-sort by length as polca srts by fastaheader..
+cat polypolished.fasta.PolcaCorrected.fa |awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' > $STRAINNAME.lensort1.fa
+cat $STRAINNAME.lensort1.fa|tr '\n' ' '|sed 's/$/\n/'|sed 's/>/\n>/g'|sed '/^$/d' > $STRAINNAME.lensort2.fa
+cat $STRAINNAME.lensort2.fa|awk '{ print length }'|paste - $STRAINNAME.lensort2.fa |sort -n -r |cut -f 2|sed 's/ /\n/'|sed 's/ //g' > $STRAINNAME.lensort3.fa
+rm $STRAINNAME.lensort1.fa $STRAINNAME.lensort2.fa
+
+
 #phylogenetic placement
 mkdir automlst
-cp polypolished.fasta.PolcaCorrected.fa automlst/.
+cp $STRAINNAME.lensort3.fa automlst/.
 autoMLST --cpu $THREADS automlst/ automlst/
 cat automlst/mash_distances.txt | grep -v \# | sort -k5 | tail -n 1 | cut -f 2,3,5,7,8 | sed 's/_/\n/2' | sed 's/\t/\n/g' | split -l 1 -a 1 -d - automlst/result
 cat automlst/result1 > automlst/genus
@@ -124,7 +131,8 @@ paste automlst/result1 automlst/result0 automlst/result3| sed 's/\t/_/g' > autom
 paste automlst/result1 automlst/result2 automlst/result0 automlst/result3| sed 's/\t/_/g' > automlst/genus_species_ref_ANI
 
 #prepare for annotation
-cat polypolished.fasta.PolcaCorrected.fa | sed "s/contig/$STRAINNAME/" | sed "s/scaffold/${STRAINNAME}_scaf/" |sed 's/_polypolish//' > $STRAINNAME.contigs.fasta
+cat $STRAINNAME.lensort3.fa | sed "s/contig/$STRAINNAME/" | sed "s/scaffold/${STRAINNAME}_scaf/" |sed 's/_polypolish//' > $STRAINNAME.contigs.fasta
+rm $STRAINNAME.lensort3.fa
 
 #annotate: note that the 6 actinobacrterial strains as well as PFA should be included
 cat `dirname "$0"`/trusted_annotations/*gbff >> trusted.gbff
