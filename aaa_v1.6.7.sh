@@ -115,7 +115,7 @@ module unload masurca
 #re-sort by length as polca srts by fastaheader..
 cat polypolished.fasta.PolcaCorrected.fa |awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' > $STRAINNAME.lensort1.fa
 cat $STRAINNAME.lensort1.fa|tr '\n' ' '|sed 's/$/\n/'|sed 's/>/\n>/g'|sed '/^$/d' > $STRAINNAME.lensort2.fa
-cat $STRAINNAME.lensort2.fa|awk '{ print length }'|paste - $STRAINNAME.lensort2.fa |sort -n -r |cut -f 2|sed 's/ /\n/'|sed 's/ //g'|sed 's/^$//' > $STRAINNAME.lensort3.fa
+cat $STRAINNAME.lensort2.fa|awk '{ print length }'|paste - $STRAINNAME.lensort2.fa |sort -n -r |cut -f 2|sed 's/ /\n/'|sed 's/ //g'|sed '/^$/d' > $STRAINNAME.lensort3.fa
 rm $STRAINNAME.lensort1.fa $STRAINNAME.lensort2.fa
 
 
