@@ -55,10 +55,10 @@ module unload masurca
 #assembly nanopore data
 flye -t $THREADS -i 5 -o flye --nano-raw nanopore/*gz 
 cat flye/flye.log|grep 'Reads N50.*' -o|cut -f 3 -d ' '|printf 'nanopore N50: %s\n' "$(cat)" > n50
-cat flye/assembly.fasta |awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' > lensort1.fa
-cat lensort1.fa|tr '\n' ' '|sed 's/$/\n/'|sed 's/>/\n>/g'|sed '/^$/d' > lensort2.fa
-cat lensort2.fa|awk '{ print length }'|paste - lensort2.fa |sort -n -r |cut -f 2|sed 's/ /\n/'|sed 's/ //g' > flye/for_polishing.fa
-rm lensort1.fa lensort2.fa
+cat flye/assembly.fasta |awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' > $STRAINNAME.lensort1.fa
+cat $STRAINNAME.lensort1.fa|tr '\n' ' '|sed 's/$/\n/'|sed 's/>/\n>/g'|sed '/^$/d' > $STRAINNAME.lensort2.fa
+cat $STRAINNAME.lensort2.fa|awk '{ print length }'|paste - $STRAINNAME.lensort2.fa |sort -n -r |cut -f 2|sed 's/ /\n/'|sed 's/ //g' > flye/for_polishing.fa
+rm $STRAINNAME.lensort1.fa $STRAINNAME.lensort2.fa
 
 
 #the illumina read naming needs to exactly match the below for trimgalore to recognize it
