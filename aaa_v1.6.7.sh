@@ -142,7 +142,7 @@ basename $0|sed 's/^/tool_version:/' > aaaversion
 echo $STRAINNAME > strainname
 cat automlst/genus|sed 's/^/autoMLST_genus:/' > genus
 paste  strainname genus aaaversion |sed 's/\t/_/g'> antiSMASH_html_comment
-antismash --output-dir ${STRAINNAME}_antiSMASH --cb-general --cb-subclusters --cb-knownclusters -c $THREADS ${STRAINNAME}_prokka_actinoannotPFAM/$STRAINNAME.gbk  --genefinding-tool none --clusterhmmer --cc-mibig --asf --tigr --pfam2go --html-description `cat antiSMASH_html_comment`
+antismash --output-dir ${STRAINNAME}_antiSMASH --cb-general --cb-subclusters --cb-knownclusters -c $THREADS ${STRAINNAME}_prokka_actinoannotPFAM/$STRAINNAME.gbk  --genefinding-tool none --clusterhmmer --cc-mibig --asf --tigr --pfam2go --html-description `cat antiSMASH_html_comment` 2>antiSMASH.errorlog
 rm aaaversion strainname genus antiSMASH_html_comment 
 
 #make short results log of the assembly
