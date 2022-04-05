@@ -55,6 +55,11 @@ module unload masurca
 #assembly nanopore data
 flye -t $THREADS -i 5 -o flye --nano-raw nanopore/*gz 
 cat flye/flye.log|grep 'Reads N50.*' -o|cut -f 3 -d ' '|printf 'nanopore N50: %s\n' "$(cat)" > n50
+cat flye/assembly.fasta |awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' > lensort1.fa
+cat lensort1.fa|tr '\n' ' '|sed 's/$/\n/'|sed 's/>/\n>/g'|sed '/^$/d' > lensort2.fa
+cat lensort2.fa|awk '{ print length }'|paste - lensort2.fa |sort -n -r |cut -f 2|sed 's/ /\n/'|sed 's/ //g' > flye/for_polishing.fa
+rm lensort1.fa lensort2.fa
+
 
 #the illumina read naming needs to exactly match the below for trimgalore to recognize it
 zcat illumina/*1.fq.gz >> illumina/R1.fq
@@ -85,15 +90,14 @@ fi
 
 
 #polypolish
-bwa index flye/assembly.fasta
-bwa mem -t $THREADS -a flye/assembly.fasta illumina/*val_1.fq.gz > alignments_1.sam
-bwa mem -t $THREADS -a flye/assembly.fasta illumina/*val_2.fq.gz > alignments_2.sam
+bwa index flye/for_polishing.fa
+bwa mem -t $THREADS -a flye/for_polishing.fa illumina/*val_1.fq.gz > alignments_1.sam
+bwa mem -t $THREADS -a flye/for_polishing.fa illumina/*val_2.fq.gz > alignments_2.sam
 polypolish_insert_filter.py --in1 alignments_1.sam --in2 alignments_2.sam --out1 filtered_1.sam --out2 filtered_2.sam
-polypolish flye/assembly.fasta filtered_1.sam filtered_2.sam > polypolished.fasta 2> polypolish.log
+polypolish flye/for_polishing.fa filtered_1.sam filtered_2.sam > polypolished.fasta 2> polypolish.log
 rm alignments_1.sam alignments_2.sam filtered_1.sam filtered_2.sam 
 
 #POLCA via modules
-echo blaa
 module load masurca
 polca.sh -a polypolished.fasta -r 'illumina/*_val_1.fq.gz illumina/*_val_2.fq.gz' -t $THREADS
 module unload masurca
