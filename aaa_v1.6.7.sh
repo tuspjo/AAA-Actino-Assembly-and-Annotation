@@ -46,14 +46,16 @@ flye --version | cmp - `dirname "$0"`/versions/flye2.9
 prokka --version 2>&1|cmp - `dirname "$0"`/versions/prokka
 trim_galore --version | cmp - `dirname "$0"`/versions/trimgalore
 #unicycler --version | cmp - `dirname "$0"`/versions/unicycler
-antismash --version |cmp - `dirname "$0"`/versions/antiSMASH
+antismash6 --version |cmp - `dirname "$0"`/versions/antiSMASH
 polypolish --version |cmp - `dirname "$0"`/versions/polypolish
-module load masurca
-masurca --version|cmp - `dirname "$0"`/versions/masurca
-module unload masurca
+#module load masurca
+#masurca --version|cmp - `dirname "$0"`/versions/masurca
+#module unload masurca
 
 #assembly nanopore data
-flye -t $THREADS -i 5 -o flye --nano-raw nanopore/*gz 
+zcat nanopore/*gz|gzip > allnp.fq.gz
+flye -t $THREADS -i 5 -o flye --nano-raw allnp.fq.gz
+rm allnp.fq.gz 
 cat flye/flye.log|grep 'Reads N50.*' -o|cut -f 3 -d ' '|printf 'nanopore N50: %s\n' "$(cat)" > n50
 cat flye/assembly.fasta |awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' > $STRAINNAME.lensort1.fa
 cat $STRAINNAME.lensort1.fa|tr '\n' ' '|sed 's/$/\n/'|sed 's/>/\n>/g'|sed '/^$/d' > $STRAINNAME.lensort2.fa
@@ -97,20 +99,20 @@ polypolish_insert_filter.py --in1 alignments_1.sam --in2 alignments_2.sam --out1
 polypolish flye/for_polishing.fa filtered_1.sam filtered_2.sam > polypolished.fasta 2> polypolish.log
 rm alignments_1.sam alignments_2.sam filtered_1.sam filtered_2.sam 
 
-#POLCA via modules
-module load masurca
-polca.sh -a polypolished.fasta -r 'illumina/*_val_1.fq.gz illumina/*_val_2.fq.gz' -t $THREADS
-module unload masurca
-
-##POLCA on nbc08 (non-module)
-#echo "POLCA start"
-#OLD_PATH=$PATH
-#export PATH=`get_masurca_path.sh`:$PATH
-#OLD_LD_PATH=LD_LIBRARY_PATH
-#export LD_LIBRARY_PATH=`get_masurca_lib_path.sh`:$LD_LIBRARY_PATH
+##POLCA via modules
+#module load masurca
 #polca.sh -a polypolished.fasta -r 'illumina/*_val_1.fq.gz illumina/*_val_2.fq.gz' -t $THREADS
-#export PATH=$OLD_PATH
-#export LD_LIBRARY_PATH=$OLD_LD_PATH
+#module unload masurca
+
+#POLCA on nbc08 (non-module)
+echo "POLCA start"
+OLD_PATH=$PATH
+export PATH=`get_masurca_path.sh`:$PATH
+OLD_LD_PATH=LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=`get_masurca_lib_path.sh`:$LD_LIBRARY_PATH
+polca.sh -a polypolished.fasta -r 'illumina/*_val_1.fq.gz illumina/*_val_2.fq.gz' -t $THREADS
+export PATH=$OLD_PATH
+export LD_LIBRARY_PATH=$OLD_LD_PATH
 
 #re-sort by length as polca srts by fastaheader..
 cat polypolished.fasta.PolcaCorrected.fa |awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' > $STRAINNAME.lensort1.fa
@@ -142,7 +144,7 @@ basename $0|sed 's/^/tool_version:/' > aaaversion
 echo $STRAINNAME > strainname
 cat automlst/genus|sed 's/^/autoMLST_genus:/' > genus
 paste  strainname genus aaaversion |sed 's/\t/_/g'> antiSMASH_html_comment
-antismash --output-dir ${STRAINNAME}_antiSMASH --cb-general --cb-subclusters --cb-knownclusters -c $THREADS ${STRAINNAME}_prokka_actinoannotPFAM/$STRAINNAME.gbk  --genefinding-tool none --clusterhmmer --cc-mibig --asf --tigr --pfam2go --html-description `cat antiSMASH_html_comment` 2>antiSMASH.errorlog
+antismash6 --output-dir ${STRAINNAME}_antiSMASH --cb-general --cb-subclusters --cb-knownclusters -c $THREADS ${STRAINNAME}_prokka_actinoannotPFAM/$STRAINNAME.gbk  --genefinding-tool none --clusterhmmer --cc-mibig --asf --tigr --pfam2go --html-description `cat antiSMASH_html_comment` 2>antiSMASH.errorlog
 rm aaaversion strainname genus antiSMASH_html_comment 
 
 #make short results log of the assembly
@@ -185,25 +187,25 @@ blastn -version|grep -v Pack|sed 's/: / v/' >> $STRAINNAME.AA.log
 busco --version|sed 's/ / v/' >> $STRAINNAME.AA.log
 flye --version 2>&1|printf 'flye v%s\n' "$(cat)" >> $STRAINNAME.AA.log
 
-module load masurca
-masurca --version |sed 's/version //'|printf 'masurca/polca v%s\n' "$(cat)" >> $STRAINNAME.AA.log
-module unload masurca
+#module load masurca
+#masurca --version |sed 's/version //'|printf 'masurca/polca v%s\n' "$(cat)" >> $STRAINNAME.AA.log
+#module unload masurca
 
-##POLCA-version for non-module
-#echo "POLCA start"
-#OLD_PATH=$PATH
-#export PATH=`get_masurca_path.sh`:$PATH
-#OLD_LD_PATH=LD_LIBRARY_PATH
-#export LD_LIBRARY_PATH=`get_masurca_lib_path.sh`:$LD_LIBRARY_PATH
-#polca.sh --version |printf 'masurca/polca v%s\n' "$(cat)" >> $STRAINNAME.AA.log 
-#export PATH=$OLD_PATH
-#export LD_LIBRARY_PATH=$OLD_LD_PATH
+#POLCA-version for non-module
+echo "POLCA start"
+OLD_PATH=$PATH
+export PATH=`get_masurca_path.sh`:$PATH
+OLD_LD_PATH=LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=`get_masurca_lib_path.sh`:$LD_LIBRARY_PATH
+polca.sh --version |printf 'masurca/polca v%s\n' "$(cat)" >> $STRAINNAME.AA.log 
+export PATH=$OLD_PATH
+export LD_LIBRARY_PATH=$OLD_LD_PATH
 
 
 polypolish --version 2>&1|printf '%s\n' "$(cat)" >> $STRAINNAME.AA.log
 prokka --version 2>&1|grep prokka_|sed 's/ / v/' >> $STRAINNAME.AA.log
 trim_galore --version |grep version|sed 's/.*version /v/'|printf 'trimgalore %s\n' "$(cat)" >> $STRAINNAME.AA.log
-antismash --version >> $STRAINNAME.AA.log
+antismash6 --version >> $STRAINNAME.AA.log
 
 #clean up temporary files
 rm -r  automlst busco* flye ${STRAINNAME}_antiSMASH
