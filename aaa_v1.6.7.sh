@@ -54,8 +54,12 @@ polypolish --version |cmp - `dirname "$0"`/versions/polypolish
 
 #assembly nanopore data
 zcat nanopore/*gz|gzip > allnp.fq.gz
-flye -t $THREADS -i 5 -o flye --nano-raw allnp.fq.gz
+filtlong -p 50 allnp.fq.gz|gzip - > keep50.fq.gz
 rm allnp.fq.gz 
+
+flye -t $THREADS -i 5 -o flye --nano-raw keep50.fq.gz
+rm rm allnp.fq.gz 
+
 cat flye/flye.log|grep 'Reads N50.*' -o|cut -f 3 -d ' '|printf 'nanopore N50: %s\n' "$(cat)" > n50
 cat flye/assembly.fasta |awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' > $STRAINNAME.lensort1.fa
 cat $STRAINNAME.lensort1.fa|tr '\n' ' '|sed 's/$/\n/'|sed 's/>/\n>/g'|sed '/^$/d' > $STRAINNAME.lensort2.fa
