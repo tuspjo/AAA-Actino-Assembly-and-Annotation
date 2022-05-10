@@ -54,12 +54,8 @@ polypolish --version |cmp - `dirname "$0"`/versions/polypolish
 
 #assembly nanopore data
 zcat nanopore/*gz|gzip > allnp.fq.gz
-filtlong -p 50 allnp.fq.gz|gzip - > keep50.fq.gz
+flye -t $THREADS -i 5 -o flye --nano-raw allnp.fq.gz
 rm allnp.fq.gz 
-
-flye -t $THREADS -i 5 -o flye --nano-raw keep50.fq.gz
-rm rm allnp.fq.gz 
-
 cat flye/flye.log|grep 'Reads N50.*' -o|cut -f 3 -d ' '|printf 'nanopore N50: %s\n' "$(cat)" > n50
 cat flye/assembly.fasta |awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' > $STRAINNAME.lensort1.fa
 cat $STRAINNAME.lensort1.fa|tr '\n' ' '|sed 's/$/\n/'|sed 's/>/\n>/g'|sed '/^$/d' > $STRAINNAME.lensort2.fa
@@ -147,8 +143,7 @@ rm trusted.gbff
 basename $0|sed 's/^/tool_version:/' > aaaversion
 echo $STRAINNAME > strainname
 cat automlst/genus|sed 's/^/autoMLST_genus:/' > genus
-echo "reduce50" > branch
-paste  strainname genus aaaversion branch |sed 's/\t/_/g'> antiSMASH_html_comment
+paste  strainname genus aaaversion |sed 's/\t/_/g'> antiSMASH_html_comment
 antismash6 --output-dir ${STRAINNAME}_antiSMASH --cb-general --cb-subclusters --cb-knownclusters -c $THREADS ${STRAINNAME}_prokka_actinoannotPFAM/$STRAINNAME.gbk  --genefinding-tool none --clusterhmmer --cc-mibig --asf --tigr --pfam2go --html-description `cat antiSMASH_html_comment` 2>antiSMASH.errorlog
 rm aaaversion strainname genus antiSMASH_html_comment 
 
@@ -185,18 +180,17 @@ cat busco/short*|tail -n 7 >> $STRAINNAME.AA.log
 
 #document tool versions
 basename $0 >> $STRAINNAME.AA.log
-echo "NB this assembly was made with the branch reduce50, which uses filtlong -p 50 to remove the shortest and lowest quality 50% of nt in reads before assembly." >> $STRAINNAME.AA.log
 which autoMLST|sed 's/.*autoMLST\//autoMLST v/1'|sed 's/\/.*//' >> $STRAINNAME.AA.log
 Bandage --version|printf 'Bandage v%s\n' "$(cat)"|sed 's/Version: //' >> $STRAINNAME.AA.log
 bowtie2 --version |grep version >> $STRAINNAME.AA.log
 blastn -version|grep -v Pack|sed 's/: / v/' >> $STRAINNAME.AA.log
 busco --version|sed 's/ / v/' >> $STRAINNAME.AA.log
 flye --version 2>&1|printf 'flye v%s\n' "$(cat)" >> $STRAINNAME.AA.log
-filtlong --version >> $STRAINNAME.AA.log
 
 #module load masurca
 #masurca --version |sed 's/version //'|printf 'masurca/polca v%s\n' "$(cat)" >> $STRAINNAME.AA.log
 #module unload masurca
+
 #POLCA-version for non-module
 echo "POLCA start"
 OLD_PATH=$PATH
