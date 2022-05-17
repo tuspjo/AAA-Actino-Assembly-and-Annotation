@@ -60,7 +60,7 @@ python ../npgm-contigger/contigger/contigger.py --infile flye/assembly_graph.gfa
 cat npgm-contigger.fa |sed '/^$/d'|sed 'N;s/\n/ /'|cat -n - |sed 's/^     //' |sed 's/\t>/ /'|sed 's/^/>contig_/'|sed 's/ /\n/2' > oneline
 cat oneline|grep -v \> |awk '{ print length }' |sed 's/^/length /'|sed 's/$/ nt/'> seqlen
 cat oneline| grep \>|paste - seqlen > npgm-stats.txt
-##cat oneline|sed 's/ /\n/2' > npgm-contigger2.fa
+cat oneline|sed 's/ /\n/2' > npgm-contigger2.fa
 rm oneline seqlen npgm-contigger.fa
 
 cat npgm-contigger2.fa|sed 's/ .*//' > flye/assembly.fasta
