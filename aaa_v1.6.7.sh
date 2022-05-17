@@ -56,6 +56,14 @@ polypolish --version |cmp - `dirname "$0"`/versions/polypolish
 zcat nanopore/*gz|gzip > allnp.fq.gz
 flye -t $THREADS -i 5 -o flye --nano-raw allnp.fq.gz
 rm allnp.fq.gz 
+python ../npgm-contigger/contigger/contigger.py --infile flye/assembly_graph.gfa  --output npgm-contigger.fa 2>contigger.err
+cat npgm-contigger.fa |sed '/^$/d'|sed 'N;s/\n/ /'|cat -n - |sed 's/^     //' |sed 's/\t>/ /'|sed 's/^/>contig_/'|sed 's/ /\n/2' > tmp
+cat tmp|grep -v \> |awk '{ print length }' |sed 's/^/length /'|sed 's/$/ nt/'> seqlen
+cat tmp| grep \>|paste - seqlen > npgm-stats.txt
+rm tmp seqlen
+
+
+
 cat flye/flye.log|grep 'Reads N50.*' -o|cut -f 3 -d ' '|printf 'nanopore N50: %s\n' "$(cat)" > n50
 cat flye/assembly.fasta |awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' > $STRAINNAME.lensort1.fa
 cat $STRAINNAME.lensort1.fa|tr '\n' ' '|sed 's/$/\n/'|sed 's/>/\n>/g'|sed '/^$/d' > $STRAINNAME.lensort2.fa
@@ -133,8 +141,11 @@ paste automlst/result1 automlst/result0 automlst/result3| sed 's/\t/_/g' > autom
 paste automlst/result1 automlst/result2 automlst/result0 automlst/result3| sed 's/\t/_/g' > automlst/genus_species_ref_ANI
 
 #prepare for annotation
+#cat $STRAINNAME.lensort3.fa | sed "s/contig/$STRAINNAME/" | sed "s/scaffold/${STRAINNAME}_scaf/" |sed 's/_polypolish//' > $STRAINNAME.contigs.fasta
+#rm $STRAINNAME.lensort3.fa
 cat $STRAINNAME.lensort3.fa | sed "s/contig/$STRAINNAME/" | sed "s/scaffold/${STRAINNAME}_scaf/" |sed 's/_polypolish//' > $STRAINNAME.contigs.fasta
-rm $STRAINNAME.lensort3.fa
+
+
 
 #annotate: note that the 6 actinobacrterial strains as well as PFA should be included
 cat `dirname "$0"`/trusted_annotations/*gbff >> trusted.gbff
@@ -163,6 +174,9 @@ assembly-stats -s $STRAINNAME.contigs.fasta|grep number|cut -f 3 |printf 'number
 assembly-stats -s $STRAINNAME.contigs.fasta|grep total_length|cut -f 3|printf 'total assembly length: %s\n' "$(cat)" >> $STRAINNAME.AA.log
 assembly-stats -s $STRAINNAME.contigs.fasta|grep longest|cut -f 3|printf 'longest contig: %s\n' "$(cat)" >> $STRAINNAME.AA.log
 cat flye/assembly_info.txt >> $STRAINNAME.AA.log
+
+cat npgm-stats.txt >> $STRAINNAME.AA.log
+
 cat n50 >> $STRAINNAME.AA.log
 cat ill_pairs >> $STRAINNAME.AA.log
 cat ${STRAINNAME}.graph.gfa |grep ^S|cut -f 3|awk '{ print length }'|sed 's/$/ nt/' > ${STRAINNAME}.edgelength
