@@ -57,12 +57,13 @@ zcat nanopore/*gz|gzip > allnp.fq.gz
 flye -t $THREADS -i 5 -o flye --nano-raw allnp.fq.gz
 rm allnp.fq.gz 
 python ../npgm-contigger/contigger/contigger.py --infile flye/assembly_graph.gfa  --output npgm-contigger.fa 2>contigger.err
-cat npgm-contigger.fa |sed '/^$/d'|sed 'N;s/\n/ /'|cat -n - |sed 's/^     //' |sed 's/\t>/ /'|sed 's/^/>contig_/'|sed 's/ /\n/2' > tmp
-cat tmp|grep -v \> |awk '{ print length }' |sed 's/^/length /'|sed 's/$/ nt/'> seqlen
-cat tmp| grep \>|paste - seqlen > npgm-stats.txt
-rm tmp seqlen
+cat npgm-contigger.fa |sed '/^$/d'|sed 'N;s/\n/ /'|cat -n - |sed 's/^     //' |sed 's/\t>/ /'|sed 's/^/>contig_/'|sed 's/ /\n/2' > oneline
+cat oneline|grep -v \> |awk '{ print length }' |sed 's/^/length /'|sed 's/$/ nt/'> seqlen
+cat oneline| grep \>|paste - seqlen > npgm-stats.txt
+##cat oneline|sed 's/ /\n/2' > npgm-contigger2.fa
+rm oneline seqlen npgm-contigger.fa
 
-
+cat npgm-contigger2.fa|sed 's/ .*//' > flye/assembly.fasta
 
 cat flye/flye.log|grep 'Reads N50.*' -o|cut -f 3 -d ' '|printf 'nanopore N50: %s\n' "$(cat)" > n50
 cat flye/assembly.fasta |awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' > $STRAINNAME.lensort1.fa
