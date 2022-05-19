@@ -36,7 +36,6 @@ fi
 
 #check dependencies (makes failing faster)
 autoMLST 2>&1 | grep 'ref REFDB'
-ALE  > tmp
 Bandage --version|cmp - `dirname "$0"`/versions/bandage
 blastn -version|cmp - `dirname "$0"`/versions/blastn
 busco --version|cmp - `dirname "$0"`/versions/busco
@@ -55,13 +54,17 @@ polypolish --version |cmp - `dirname "$0"`/versions/polypolish
 #assembly nanopore data
 zcat nanopore/*gz|gzip > allnp.fq.gz
 flye -t $THREADS -i 5 -o flye --nano-raw allnp.fq.gz
-rm allnp.fq.gz 
-python ../npgm-contigger/contigger/contigger.py --infile flye/assembly_graph.gfa  --output npgm-contigger.fa 2>contigger.err
-cat npgm-contigger.fa |sed '/^$/d'|sed 'N;s/\n/ /'|cat -n - |sed 's/^     //' |sed 's/\t>/ /'|sed 's/^/>contig_/'|sed 's/ /\n/2' > oneline
+
+python ../npgm-contigger/contigger/contigger.py --infile flye/assembly_graph.gfa  --output npgm-contigged.fa 2>nbgm-contigger.err
+flye --polish-target npgm-contigged.fa -o polish --nano-raw allnp.fq.gz
+cat polish/polished_1.fasta|awk '/^>/ { if(NR>1) print "";  printf("%s\n",$0); next; } { printf("%s",$0);}  END {printf("\n");}' > polish.singleline.fa #from user ljq on https://www.biostars.org/p/9262/
+cat polish.singleline.fa |sed '/^$/d'|sed 'N;s/\n/ /'|cat -n - |sed 's/^     //' |sed 's/\t>/ /'|sed 's/^/>contig_/'|sed 's/ /\n/2' > oneline
 cat oneline|grep -v \> |awk '{ print length }' |sed 's/^/length /'|sed 's/$/ nt/'> seqlen
 cat oneline| grep \>|paste - seqlen > npgm-stats.txt
-cat oneline|sed 's/ /\n/2' > npgm-contigger2.fa
-rm oneline seqlen npgm-contigger.fa
+cat oneline|sed 's/ /\n/2' > npgm-contigger.fa
+cat polish/flye.log >> flye/flye.log
+rm allnp.fq.gz
+rm -r oneline seqlen npgm-contigged.fa polish polish.singleline.fa
 
 cat npgm-contigger2.fa|sed 's/ .*//' > flye/assembly.fasta
 
