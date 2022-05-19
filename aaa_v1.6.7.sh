@@ -148,7 +148,7 @@ paste automlst/result1 automlst/result2 automlst/result0 automlst/result3| sed '
 #cat $STRAINNAME.lensort3.fa | sed "s/contig/$STRAINNAME/" | sed "s/scaffold/${STRAINNAME}_scaf/" |sed 's/_polypolish//' > $STRAINNAME.contigs.fasta
 #rm $STRAINNAME.lensort3.fa
 cat $STRAINNAME.lensort3.fa | sed "s/contig/$STRAINNAME/" | sed "s/scaffold/${STRAINNAME}_scaf/" |sed 's/_polypolish//' > $STRAINNAME.contigs.fasta
-
+rm $STRAINNAME.lensort3.fa 
 
 
 #annotate: note that the 6 actinobacrterial strains as well as PFA should be included
@@ -180,7 +180,7 @@ assembly-stats -s $STRAINNAME.contigs.fasta|grep longest|cut -f 3|printf 'longes
 cat flye/assembly_info.txt >> $STRAINNAME.AA.log
 
 cat npgm-stats.txt >> $STRAINNAME.AA.log
-
+rm npgm-stats.txt 
 cat n50 >> $STRAINNAME.AA.log
 cat ill_pairs >> $STRAINNAME.AA.log
 cat ${STRAINNAME}.graph.gfa |grep ^S|cut -f 3|awk '{ print length }'|sed 's/$/ nt/' > ${STRAINNAME}.edgelength
@@ -230,6 +230,8 @@ rm -r  automlst busco* flye ${STRAINNAME}_antiSMASH
 rm overall_ill_on_flye_mapping_percent overall_ill_on_flye_mapping_short n50 ill_pairs
 rm illumina/*val_1.fq.gz illumina/*val_2.fq.gz
 rm polypolished.fasta bwa.err polypolished.fasta.alignSorted.bam polypolished.fasta.alignSorted.bam.bai polypolished.fasta.batches polypolished.fasta.bwa.amb polypolished.fasta.bwa.ann polypolished.fasta.bwa.bwt polypolished.fasta.bwa.pac polypolished.fasta.bwa.sa polypolished.fasta.fai polypolished.fasta.fix.success polypolished.fasta.index.success polypolished.fasta.map.success polypolished.fasta.names polypolished.fasta.PolcaCorrected.fa polypolished.fasta.report polypolished.fasta.report.success polypolished.fasta.sort.success polypolished.fasta.unSorted.sam polypolished.fasta.vcf polypolished.fasta.vc.success polypolish.log samtools.err
+
+rm npgm-contigged.fa.fai npgm-contigger.fa
 
 #make little celebratory statement marking the finishing of the pipeline
 echo 'Your assembly and annotation of'
