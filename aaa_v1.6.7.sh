@@ -66,7 +66,7 @@ cat polish/flye.log >> flye/flye.log
 rm allnp.fq.gz
 rm -r oneline seqlen npgm-contigged.fa polish polish.singleline.fa
 
-cat npgm-contigger2.fa|sed 's/ .*//' > flye/assembly.fasta
+cat npgm-contigger.fa|sed 's/ .*//' > flye/assembly.fasta
 
 cat flye/flye.log|grep 'Reads N50.*' -o|cut -f 3 -d ' '|printf 'nanopore N50: %s\n' "$(cat)" > n50
 cat flye/assembly.fasta |awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' > $STRAINNAME.lensort1.fa
