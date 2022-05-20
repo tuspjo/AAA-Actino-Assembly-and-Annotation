@@ -55,7 +55,7 @@ polypolish --version |cmp - `dirname "$0"`/versions/polypolish
 zcat nanopore/*gz|gzip > allnp.fq.gz
 flye -t $THREADS -i 5 -o flye --nano-raw allnp.fq.gz
 
-python ../npgm-contigger/contigger/contigger.py --infile flye/assembly_graph.gfa  --output npgm-contigged.fa 2>nbgm-contigger.err
+python ../npgm-contigger/contigger/contigger.py --infile flye/assembly_graph.gfa  --output npgm-contigged.fa 2>npgm-contigger.err
 flye -t $THREADS --polish-target npgm-contigged.fa -o polish --nano-raw allnp.fq.gz
 cat polish/polished_1.fasta|awk '/^>/ { if(NR>1) print "";  printf("%s\n",$0); next; } { printf("%s",$0);}  END {printf("\n");}' > polish.singleline.fa #from user ljq on https://www.biostars.org/p/9262/
 cat polish.singleline.fa |sed '/^$/d'|sed 'N;s/\n/ /'|cat -n - |sed 's/^     //' |sed 's/\t>/ /'|sed 's/^/>contig_/'|sed 's/ /\n/2' > oneline
