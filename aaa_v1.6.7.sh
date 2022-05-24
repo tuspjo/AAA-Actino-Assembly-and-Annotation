@@ -36,7 +36,6 @@ fi
 
 #check dependencies (makes failing faster)
 autoMLST 2>&1 | grep 'ref REFDB'
-ALE  > tmp
 Bandage --version|cmp - `dirname "$0"`/versions/bandage
 blastn -version|cmp - `dirname "$0"`/versions/blastn
 busco --version|cmp - `dirname "$0"`/versions/busco
@@ -52,10 +51,35 @@ polypolish --version |cmp - `dirname "$0"`/versions/polypolish
 #masurca --version|cmp - `dirname "$0"`/versions/masurca
 #module unload masurca
 
-#assembly nanopore data
+#assemble nanopore data
 zcat nanopore/*gz|gzip > allnp.fq.gz
+#filtlong -p 50 allnp.fq.gz|gzip > fl.fq.gz
+#flye -t $THREADS -i 5 -o flye --nano-raw fl.fq.gz
+#rm fl.fq.gz
+#   echo "filtlong -p 50 was used to filter the raw nanopore data" >> note
+
 flye -t $THREADS -i 5 -o flye --nano-raw allnp.fq.gz
-rm allnp.fq.gz 
+
+##npgm-contigger
+#python ../npgm-contigger/contigger/contigger.py --infile flye/assembly_graph.gfa  --output npgm-contigged.fa 2>npgm-contigger.err
+#flye -t $THREADS --polish-target npgm-contigged.fa -o polish --nano-raw allnp.fq.gz
+#cat polish/polished_1.fasta|awk '/^>/ { if(NR>1) print "";  printf("%s\n",$0); next; } { printf("%s",$0);}  END {printf("\n");}' > polish.singleline.fa #from user ljq on https://www.biostars.org/p/9262/
+#echo "the npgm-contigger was used to complete the repeat graph edges into "
+#cat polish.singleline.fa |awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' > $STRAINNAME.lensort1.fa
+#cat $STRAINNAME.lensort1.fa|tr '\n' ' '|sed 's/$/\n/'|sed 's/>/\n>/g'|sed '/^$/d' > $STRAINNAME.lensort2.fa
+#cat $STRAINNAME.lensort2.fa|awk '{ print length }'|paste - $STRAINNAME.lensort2.fa |sort -n -r |cut -f 2|sed 's/ /\n/'|sed 's/ //g'|sed '/^$/d' > $STRAINNAME.lensort3.fa
+#rm $STRAINNAME.lensort1.fa $STRAINNAME.lensort2.fa
+
+#cat $STRAINNAME.lensort3.fa |sed '/^$/d'|sed 'N;s/\n/ /'|cat -n - |sed 's/^     //' |sed 's/\t>/ /'|sed 's/^/>contig_/'|sed 's/ /\n/2' > oneline
+#cat oneline|grep -v \> |awk '{ print length }' |sed 's/^/length /'|sed 's/$/ nt/'> seqlen
+#cat oneline| grep \>|paste - seqlen > npgm-stats.txt
+#cat oneline|sed 's/ /\n/2' > npgm-contigger.fa
+#cat polish/flye.log >> flye/flye.log
+#rm allnp.fq.gz 
+#rm -r oneline seqlen npgm-contigged.fa polish polish.singleline.fa $STRAINNAME.lensort3.fa
+
+#cat npgm-contigger.fa|sed 's/ .*//' > flye/assembly.fasta
+
 cat flye/flye.log|grep 'Reads N50.*' -o|cut -f 3 -d ' '|printf 'nanopore N50: %s\n' "$(cat)" > n50
 cat flye/assembly.fasta |awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' > $STRAINNAME.lensort1.fa
 cat $STRAINNAME.lensort1.fa|tr '\n' ' '|sed 's/$/\n/'|sed 's/>/\n>/g'|sed '/^$/d' > $STRAINNAME.lensort2.fa
@@ -133,8 +157,11 @@ paste automlst/result1 automlst/result0 automlst/result3| sed 's/\t/_/g' > autom
 paste automlst/result1 automlst/result2 automlst/result0 automlst/result3| sed 's/\t/_/g' > automlst/genus_species_ref_ANI
 
 #prepare for annotation
+#cat $STRAINNAME.lensort3.fa | sed "s/contig/$STRAINNAME/" | sed "s/scaffold/${STRAINNAME}_scaf/" |sed 's/_polypolish//' > $STRAINNAME.contigs.fasta
+#rm $STRAINNAME.lensort3.fa
 cat $STRAINNAME.lensort3.fa | sed "s/contig/$STRAINNAME/" | sed "s/scaffold/${STRAINNAME}_scaf/" |sed 's/_polypolish//' > $STRAINNAME.contigs.fasta
-rm $STRAINNAME.lensort3.fa
+rm $STRAINNAME.lensort3.fa 
+
 
 #annotate: note that the 6 actinobacrterial strains as well as PFA should be included
 cat `dirname "$0"`/trusted_annotations/*gbff >> trusted.gbff
@@ -163,6 +190,9 @@ assembly-stats -s $STRAINNAME.contigs.fasta|grep number|cut -f 3 |printf 'number
 assembly-stats -s $STRAINNAME.contigs.fasta|grep total_length|cut -f 3|printf 'total assembly length: %s\n' "$(cat)" >> $STRAINNAME.AA.log
 assembly-stats -s $STRAINNAME.contigs.fasta|grep longest|cut -f 3|printf 'longest contig: %s\n' "$(cat)" >> $STRAINNAME.AA.log
 cat flye/assembly_info.txt >> $STRAINNAME.AA.log
+
+cat npgm-stats.txt >> $STRAINNAME.AA.log
+rm npgm-stats.txt 
 cat n50 >> $STRAINNAME.AA.log
 cat ill_pairs >> $STRAINNAME.AA.log
 cat ${STRAINNAME}.graph.gfa |grep ^S|cut -f 3|awk '{ print length }'|sed 's/$/ nt/' > ${STRAINNAME}.edgelength
@@ -212,6 +242,8 @@ rm -r  automlst busco* flye ${STRAINNAME}_antiSMASH
 rm overall_ill_on_flye_mapping_percent overall_ill_on_flye_mapping_short n50 ill_pairs
 rm illumina/*val_1.fq.gz illumina/*val_2.fq.gz
 rm polypolished.fasta bwa.err polypolished.fasta.alignSorted.bam polypolished.fasta.alignSorted.bam.bai polypolished.fasta.batches polypolished.fasta.bwa.amb polypolished.fasta.bwa.ann polypolished.fasta.bwa.bwt polypolished.fasta.bwa.pac polypolished.fasta.bwa.sa polypolished.fasta.fai polypolished.fasta.fix.success polypolished.fasta.index.success polypolished.fasta.map.success polypolished.fasta.names polypolished.fasta.PolcaCorrected.fa polypolished.fasta.report polypolished.fasta.report.success polypolished.fasta.sort.success polypolished.fasta.unSorted.sam polypolished.fasta.vcf polypolished.fasta.vc.success polypolish.log samtools.err
+
+rm npgm-contigged.fa.fai npgm-contigger.fa
 
 #make little celebratory statement marking the finishing of the pipeline
 echo 'Your assembly and annotation of'
