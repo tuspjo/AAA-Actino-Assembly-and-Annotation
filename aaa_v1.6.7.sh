@@ -56,7 +56,7 @@ zcat nanopore/*gz|gzip > allnp.fq.gz
 #filtlong -p 50 allnp.fq.gz|gzip > fl.fq.gz
 #flye -t $THREADS -i 5 -o flye --nano-raw fl.fq.gz
 #rm fl.fq.gz
-#   echo "filtlong -p 50 was used to filter the raw nanopore data" >> note
+#   echo "filtlong -p 50 was used to filter the raw nanopore data" >> $STRAINNAME.AA.log
 
 flye -t $THREADS -i 5 -o flye --nano-raw allnp.fq.gz
 
@@ -64,7 +64,7 @@ flye -t $THREADS -i 5 -o flye --nano-raw allnp.fq.gz
 #python ../npgm-contigger/contigger/contigger.py --infile flye/assembly_graph.gfa  --output npgm-contigged.fa 2>npgm-contigger.err
 #flye -t $THREADS --polish-target npgm-contigged.fa -o polish --nano-raw allnp.fq.gz
 #cat polish/polished_1.fasta|awk '/^>/ { if(NR>1) print "";  printf("%s\n",$0); next; } { printf("%s",$0);}  END {printf("\n");}' > polish.singleline.fa #from user ljq on https://www.biostars.org/p/9262/
-#echo "the npgm-contigger was used to complete the repeat graph edges into "
+#echo "the npgm-contigger was used to complete the repeat graph edges into replicons" >> $STRAINNAME.AA.log
 #cat polish.singleline.fa |awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' > $STRAINNAME.lensort1.fa
 #cat $STRAINNAME.lensort1.fa|tr '\n' ' '|sed 's/$/\n/'|sed 's/>/\n>/g'|sed '/^$/d' > $STRAINNAME.lensort2.fa
 #cat $STRAINNAME.lensort2.fa|awk '{ print length }'|paste - $STRAINNAME.lensort2.fa |sort -n -r |cut -f 2|sed 's/ /\n/'|sed 's/ //g'|sed '/^$/d' > $STRAINNAME.lensort3.fa
