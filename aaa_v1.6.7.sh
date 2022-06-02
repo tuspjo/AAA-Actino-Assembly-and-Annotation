@@ -62,7 +62,7 @@ flye -t $THREADS -i 5 -o flye --nano-raw allnp.fq.gz
 
 ##npgm-contigger
 #python ../npgm-contigger/contigger/contigger.py --infile flye/assembly_graph.gfa  --output npgm-contigged.fa 2>npgm-contigger.err
-#flye -t $THREADS --polish-target npgm-contigged.fa -o polish --nano-raw allnp.fq.gz
+#flye -t $THREADS --polish-target npgm-contigged.fa -o polish -i 5 --nano-raw allnp.fq.gz
 #cat polish/polished_1.fasta|awk '/^>/ { if(NR>1) print "";  printf("%s\n",$0); next; } { printf("%s",$0);}  END {printf("\n");}' > polish.singleline.fa #from user ljq on https://www.biostars.org/p/9262/
 #echo "the npgm-contigger was used to complete the repeat graph edges into replicons" >> $STRAINNAME.AA.log
 #sed -i 's/^contig_/unused_flye_contig_/' flye/assembly_info.txt
