@@ -192,8 +192,8 @@ assembly-stats -s $STRAINNAME.contigs.fasta|grep total_length|cut -f 3|printf 't
 assembly-stats -s $STRAINNAME.contigs.fasta|grep longest|cut -f 3|printf 'longest contig: %s\n' "$(cat)" >> $STRAINNAME.AA.log
 cat flye/assembly_info.txt >> $STRAINNAME.AA.log
 
-cat npgm-stats.txt >> $STRAINNAME.AA.log
-rm npgm-stats.txt 
+#cat npgm-stats.txt >> $STRAINNAME.AA.log
+#rm npgm-stats.txt 
 cat n50 >> $STRAINNAME.AA.log
 cat ill_pairs >> $STRAINNAME.AA.log
 cat ${STRAINNAME}.graph.gfa |grep ^S|cut -f 3|awk '{ print length }'|sed 's/$/ nt/' > ${STRAINNAME}.edgelength
