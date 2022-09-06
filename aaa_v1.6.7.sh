@@ -228,7 +228,7 @@ OLD_PATH=$PATH
 export PATH=`get_masurca_path.sh`:$PATH
 OLD_LD_PATH=LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=`get_masurca_lib_path.sh`:$LD_LIBRARY_PATH
-polca.sh --version |printf 'masurca/polca v%s\n' "$(cat)" >> $STRAINNAME.AA.log 
+masurca --version |printf 'masurca/polca v%s\n' "$(cat)" >> $STRAINNAME.AA.log 
 export PATH=$OLD_PATH
 export LD_LIBRARY_PATH=$OLD_LD_PATH
 
