@@ -177,7 +177,7 @@ rm aaaversion strainname genus antiSMASH_html_comment
 
 #make short results log of the assembly
 busco -i ${STRAINNAME}_prokka_actinoannotPFAM/$STRAINNAME.faa -l actinobacteria_class_odb10 -o busco -m prot -c $THREADS -q 
-Bandage image flye/assembly_graph.gfa $STRAINNAME.jpg --names
+Bandage image flye/assembly_graph.gfa $STRAINNAME.jpg 
 cp flye/assembly_graph.gfa $STRAINNAME.graph.gfa
 cp flye/flye.log $STRAINNAME.flye.log
 cp ${STRAINNAME}_antiSMASH/$STRAINNAME.zip ${STRAINNAME}.zip
